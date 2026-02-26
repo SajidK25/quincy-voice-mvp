@@ -1,0 +1,67 @@
+services:
+  - type: redis
+    name: quincy-redis
+    plan: starter
+
+  - type: web
+    name: quincy-api
+    env: docker
+    plan: starter
+    dockerfilePath: Dockerfile.api
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          name: quincy-redis
+          type: redis
+          property: connectionString
+      - key: STORAGE_DIR
+        value: /var/data
+      - key: API_KEY
+        sync: false
+      - key: RUNPOD_API_URL
+        sync: false
+      - key: RUNPOD_API_KEY
+        sync: false
+      - key: VOICE_MODEL_ID
+        sync: false
+    disk:
+      name: quincy-disk
+      mountPath: /var/data
+      sizeGB: 10
+
+  - type: worker
+    name: quincy-worker
+    env: docker
+    plan: starter
+    dockerfilePath: Dockerfile.worker
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          name: quincy-redis
+          type: redis
+          property: connectionString
+      - key: STORAGE_DIR
+        value: /var/data
+      - key: API_KEY
+        sync: false
+      - key: RUNPOD_API_URL
+        sync: false
+      - key: RUNPOD_API_KEY
+        sync: false
+      - key: VOICE_MODEL_ID
+        sync: false
+    disk:
+      name: quincy-disk
+      mountPath: /var/data
+      sizeGB: 10
+
+  - type: web
+    name: quincy-web
+    env: docker
+    plan: starter
+    dockerfilePath: Dockerfile.web
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
+      - key: VITE_API_KEY
+        sync: false
